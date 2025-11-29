@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>軽量画像レタッチツール</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>軽量画像レタッチツール</h1>
+    <p>ブラウザで完結する簡単画像加工</p>
+  </div>
+  
+  <div class="content">
+    <!-- 画像アップロードエリア -->
+    <div id="uploadSection">
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">画像をドラッグ＆ドロップ</div>
+        <div class="upload-hint">またはクリックして選択</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" class="hidden">
+    </div>
+    
+    <!-- エフェクト選択 -->
+    <div id="effectSelection" class="hidden">
+      <h2 style="margin-bottom: 24px; color: #2d3748; font-size: 20px;">エフェクトを選択</h2>
+      <div class="effect-grid" id="effectGrid"></div>
+    </div>
+    
+    <!-- エディター -->
+    <div id="editor" class="editor">
+      <div class="editor-header">
+        <div class="editor-header-top">
+          <button class="back-btn" id="backBtn">← エフェクト選択に戻る</button>
+          <div class="editor-title" id="editorTitle"></div>
+          <div class="editor-actions">
+            <button class="btn btn-secondary" id="resetBtn">リセット</button>
+            <button class="btn btn-primary" id="downloadBtn">ダウンロード</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="editor-workspace">
+        <div class="preview-area">
+          <canvas id="previewCanvas" class="preview-canvas"></canvas>
+          <button class="btn btn-secondary toggle-comparison" id="toggleComparison">
+            長押しでBefore表示
+          </button>
+        </div>
+        
+        <div class="controls-panel" id="controlsPanel">
+          <!-- 動的に生成 -->
+        </div>
+      </div>
+      
+      <!-- エクスポート設定 -->
+      <div class="export-settings">
+        <div class="export-title">エクスポート設定</div>
+        
+        <div class="export-option">
+          <label class="export-label" for="imageFormat">画像形式</label>
+          <select id="imageFormat">
+            <option value="png">PNG（透過対応・高品質）</option>
+            <option value="jpeg">JPEG（軽量・写真向け）</option>
+          </select>
+        </div>
+        
+        <div class="export-option" id="qualityOption">
+          <div class="quality-display">
+            <label class="export-label" for="imageQuality">画像品質</label>
+            <span class="quality-value" id="qualityValue">95%</span>
+          </div>
+          <input type="range" id="imageQuality" min="1" max="100" value="95" step="1">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
