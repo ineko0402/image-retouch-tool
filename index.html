@@ -58,7 +58,12 @@
         <div class="editor-header">
           <button class="back-btn" id="backBtn">← エフェクト選択に戻る</button>
           <div class="editor-title" id="editorTitle"></div>
-          <button class="btn btn-secondary" id="resetBtn">リセット</button>
+          <div class="editor-header-actions">
+            <button class="btn btn-secondary toggle-comparison" id="toggleComparison">
+              長押しでBefore
+            </button>
+            <button class="btn btn-secondary" id="resetBtn">リセット</button>
+          </div>
         </div>
         
         <div class="editor-workspace">
@@ -70,38 +75,33 @@
             <div class="controls-panel" id="controlsPanel">
               <!-- 動的に生成 -->
             </div>
-            
-            <div class="sidebar-actions">
-              <button class="btn btn-secondary btn-block toggle-comparison" id="toggleComparison">
-                長押しでBefore表示
-              </button>
+          </div>
+          
+          <div class="download-sidebar">
+            <div class="export-settings">
+              <div class="export-title">エクスポート設定</div>
               
-              <!-- エクスポート設定 -->
-              <div class="export-settings">
-                <div class="export-title">エクスポート設定</div>
-                
-                <div class="export-option">
-                  <label class="export-label" for="imageFormat">画像形式</label>
-                  <select id="imageFormat">
-                    <option value="png">PNG（透過対応・高品質）</option>
-                    <option value="jpeg">JPEG（軽量・写真向け）</option>
-                  </select>
-                </div>
-                
-                <div class="export-option" id="qualityOption">
-                  <div class="quality-display">
-                    <label class="export-label" for="imageQuality">画像品質</label>
-                    <span class="quality-value" id="qualityValue">95%</span>
-                  </div>
-                  <input type="range" id="imageQuality" min="1" max="100" value="95" step="1">
-                </div>
+              <div class="export-option">
+                <label class="export-label" for="imageFormat">画像形式</label>
+                <select id="imageFormat">
+                  <option value="png">PNG（透過対応・高品質）</option>
+                  <option value="jpeg">JPEG（軽量・写真向け）</option>
+                </select>
               </div>
               
-              <button class="btn btn-primary btn-block" id="downloadBtn">
-                <span class="btn-icon">⬇</span>
-                ダウンロード
-              </button>
+              <div class="export-option" id="qualityOption">
+                <div class="quality-display">
+                  <label class="export-label" for="imageQuality">画像品質</label>
+                  <span class="quality-value" id="qualityValue">95%</span>
+                </div>
+                <input type="range" id="imageQuality" min="1" max="100" value="95" step="1">
+              </div>
             </div>
+            
+            <button class="btn btn-primary btn-block" id="downloadBtn">
+              <span class="btn-icon">⬇</span>
+              ダウンロード
+            </button>
           </div>
         </div>
       </div>

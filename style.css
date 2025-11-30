@@ -260,6 +260,11 @@ body {
   flex-shrink: 0;
 }
 
+.editor-header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .back-btn {
   background: #e2e8f0;
   color: #4a5568;
@@ -309,7 +314,7 @@ body {
 }
 
 .controls-sidebar {
-  width: 340px;
+  width: 280px;
   background: white;
   border-left: 2px solid #e2e8f0;
   display: flex;
@@ -323,15 +328,22 @@ body {
   overflow-y: auto;
 }
 
-.sidebar-actions {
-  padding: 20px;
-  border-top: 2px solid #e2e8f0;
+.download-sidebar {
+  width: 280px;
   background: #fafafa;
-  flex-shrink: 0;
+  border-left: 2px solid #e2e8f0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .control-group {
   margin-bottom: 24px;
+}
+
+.control-group:last-child {
+  margin-bottom: 0;
 }
 
 .control-label {
@@ -444,7 +456,6 @@ select:focus {
   background: white;
   border-radius: 8px;
   padding: 16px;
-  margin-bottom: 12px;
   border: 2px solid #e2e8f0;
 }
 
@@ -452,11 +463,11 @@ select:focus {
   font-size: 14px;
   font-weight: 600;
   color: #2d3748;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .export-option {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .export-option:last-child {
@@ -486,6 +497,7 @@ select:focus {
 
 .toggle-comparison {
   user-select: none;
+  white-space: nowrap;
 }
 
 .hidden {
@@ -494,8 +506,9 @@ select:focus {
 
 /* レスポンシブ */
 @media (max-width: 1200px) {
-  .controls-sidebar {
-    width: 300px;
+  .controls-sidebar,
+  .download-sidebar {
+    width: 240px;
   }
 }
 
@@ -508,12 +521,23 @@ select:focus {
     padding: 8px;
   }
   
+  .editor-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .editor-header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
   .editor-workspace {
     flex-direction: column;
   }
   
-  .controls-sidebar {
+  .controls-sidebar,
+  .download-sidebar {
     width: 100%;
-    max-height: 40vh;
+    max-height: 30vh;
   }
 }

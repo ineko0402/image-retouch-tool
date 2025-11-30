@@ -4,7 +4,7 @@
 import { setOriginalImage } from './state.js';
 import { setStep } from './steps.js';
 
-export function setupUpload(onImageLoaded) {
+export function setupUpload() {
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
   const changeImageBtn = document.getElementById('changeImageBtn');
@@ -24,13 +24,13 @@ export function setupUpload(onImageLoaded) {
     e.preventDefault();
     uploadArea.classList.remove('dragover');
     if (e.dataTransfer.files.length > 0) {
-      loadImage(e.dataTransfer.files[0], onImageLoaded);
+      loadImage(e.dataTransfer.files[0]);
     }
   });
   
   fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
-      loadImage(e.target.files[0], onImageLoaded);
+      loadImage(e.target.files[0]);
     }
   });
   
@@ -38,11 +38,12 @@ export function setupUpload(onImageLoaded) {
   changeImageBtn.addEventListener('click', () => {
     document.getElementById('effectSelection').classList.add('hidden');
     document.getElementById('uploadSection').classList.remove('hidden');
+    fileInput.value = ''; // ファイル入力をリセット
     setStep(1);
   });
 }
 
-function loadImage(file, callback) {
+function loadImage(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
@@ -51,10 +52,6 @@ function loadImage(file, callback) {
       const fileType = detectFileType(file);
       
       setOriginalImage(img, fileName, fileType);
-      
-      if (callback) {
-        callback();
-      }
       
       document.getElementById('uploadSection').classList.add('hidden');
       document.getElementById('effectSelection').classList.remove('hidden');
