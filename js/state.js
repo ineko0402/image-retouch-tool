@@ -5,9 +5,10 @@ export const state = {
   originalImage: null,
   currentEffect: null,
   originalFileName: 'output',
-  originalFileType: 'png', // 元ファイルの形式を保存
+  originalFileType: 'png',
   canvas: null,
-  ctx: null
+  ctx: null,
+  currentStep: 1
 };
 
 export function setOriginalImage(img, fileName, fileType) {

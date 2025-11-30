@@ -2,10 +2,12 @@
 // 画像アップロード処理
 
 import { setOriginalImage } from './state.js';
+import { setStep } from './steps.js';
 
 export function setupUpload(onImageLoaded) {
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
+  const changeImageBtn = document.getElementById('changeImageBtn');
   
   uploadArea.addEventListener('click', () => fileInput.click());
   
@@ -31,6 +33,13 @@ export function setupUpload(onImageLoaded) {
       loadImage(e.target.files[0], onImageLoaded);
     }
   });
+  
+  // 画像を選び直すボタン
+  changeImageBtn.addEventListener('click', () => {
+    document.getElementById('effectSelection').classList.add('hidden');
+    document.getElementById('uploadSection').classList.remove('hidden');
+    setStep(1);
+  });
 }
 
 function loadImage(file, callback) {
@@ -39,8 +48,6 @@ function loadImage(file, callback) {
     const img = new Image();
     img.onload = () => {
       const fileName = file.name.replace(/\.[^/.]+$/, '');
-      
-      // ファイル形式を検出
       const fileType = detectFileType(file);
       
       setOriginalImage(img, fileName, fileType);
@@ -51,6 +58,7 @@ function loadImage(file, callback) {
       
       document.getElementById('uploadSection').classList.add('hidden');
       document.getElementById('effectSelection').classList.remove('hidden');
+      setStep(2);
     };
     img.src = e.target.result;
   };
@@ -60,14 +68,12 @@ function loadImage(file, callback) {
 function detectFileType(file) {
   const mimeType = file.type.toLowerCase();
   
-  // MIMEタイプから判定
   if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
     return 'jpeg';
   } else if (mimeType === 'image/png') {
     return 'png';
   }
   
-  // 拡張子から判定（フォールバック）
   const extension = file.name.split('.').pop().toLowerCase();
   if (extension === 'jpg' || extension === 'jpeg') {
     return 'jpeg';
@@ -75,6 +81,5 @@ function detectFileType(file) {
     return 'png';
   }
   
-  // デフォルトはPNG
   return 'png';
 }

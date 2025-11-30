@@ -5,6 +5,7 @@ import { getState, setCurrentEffect, setCanvas } from './state.js';
 import { getEffectById } from './effects.js';
 import { generateControls, getControlValues, resetControlValues } from './ui.js';
 import { setupCanvas, applyEffect, showOriginal, downloadImage } from './canvas.js';
+import { setStep } from './steps.js';
 
 export function openEditor(effectId) {
   const effect = getEffectById(effectId);
@@ -26,11 +27,14 @@ export function openEditor(effectId) {
   
   setupEditorButtons();
   setupExportSettings();
+  
+  setStep(3);
 }
 
 export function closeEditor() {
   document.getElementById('editor').classList.remove('active');
   document.getElementById('effectSelection').classList.remove('hidden');
+  setStep(2);
 }
 
 function handleControlChange() {
@@ -48,7 +52,6 @@ function handleDownload() {
   const state = getState();
   const params = getControlValues(state.currentEffect);
   
-  // エクスポート設定を取得
   const format = document.getElementById('imageFormat').value;
   const quality = parseInt(document.getElementById('imageQuality').value) / 100;
   
@@ -62,19 +65,15 @@ function setupExportSettings() {
   const qualityValue = document.getElementById('qualityValue');
   const qualityOption = document.getElementById('qualityOption');
   
-  // 元画像の形式に合わせてデフォルトを設定
   formatSelect.value = state.originalFileType;
   
-  // 初期表示の設定
   if (state.originalFileType === 'jpeg') {
     qualityOption.style.display = 'block';
   } else {
     qualityOption.style.display = 'none';
   }
   
-  // 画像形式変更時の処理
   formatSelect.addEventListener('change', (e) => {
-    // JPEGの場合のみ品質設定を表示
     if (e.target.value === 'jpeg') {
       qualityOption.style.display = 'block';
     } else {
@@ -82,7 +81,6 @@ function setupExportSettings() {
     }
   });
   
-  // 品質スライダーの値表示
   qualitySlider.addEventListener('input', (e) => {
     qualityValue.textContent = `${e.target.value}%`;
   });
