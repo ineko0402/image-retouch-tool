@@ -22,6 +22,10 @@ export function initCropMode(canvas, overlay, image, params) {
     cropState.overlayCtx = overlay.getContext('2d');
     cropState.image = image;
 
+    // メインキャンバスに元画像を描画（重要！）
+    cropState.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    cropState.ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
     // オーバーレイのサイズを合わせる
     overlay.width = canvas.width;
     overlay.height = canvas.height;
@@ -50,11 +54,22 @@ export function initCropMode(canvas, overlay, image, params) {
 
 export function destroyCropMode() {
     if (cropState.overlay) {
+        // オーバーレイキャンバスをクリア
+        if (cropState.overlayCtx) {
+            cropState.overlayCtx.clearRect(0, 0, cropState.overlay.width, cropState.overlay.height);
+        }
+        
+        // クラスを削除
         cropState.overlay.classList.remove('active');
+        
+        // イベントリスナーを削除
         cropState.overlay.removeEventListener('mousedown', handleMouseDown);
         cropState.overlay.removeEventListener('mousemove', handleMouseMove);
         cropState.overlay.removeEventListener('mouseup', handleMouseUp);
         cropState.overlay.removeEventListener('mouseleave', handleMouseUp);
+        
+        // カーソルをリセット
+        cropState.overlay.style.cursor = 'crosshair';
     }
 }
 

@@ -10,10 +10,22 @@ import { initCropMode, destroyCropMode, getCropSelection, applyCrop, updateAspec
 
 let cropMode = false;
 let cropSelection = null;
+let cropUpdateInterval = null;
 
 export function openEditor(effectId) {
   const effect = getEffectById(effectId);
   const state = getState();
+  
+  // 前回のトリミングモードをクリーンアップ
+  if (cropMode) {
+    destroyCropMode();
+    if (cropUpdateInterval) {
+      clearInterval(cropUpdateInterval);
+      cropUpdateInterval = null;
+    }
+    cropMode = false;
+    cropSelection = null;
+  }
   
   setCurrentEffect(effect);
   
@@ -45,7 +57,7 @@ export function openEditor(effectId) {
     }
     
     // リアルタイムで選択範囲の情報を更新
-    setInterval(() => {
+    cropUpdateInterval = setInterval(() => {
       if (cropMode) {
         updateCropInfo();
       }
@@ -64,6 +76,10 @@ export function openEditor(effectId) {
 export function closeEditor() {
   if (cropMode) {
     destroyCropMode();
+    if (cropUpdateInterval) {
+      clearInterval(cropUpdateInterval);
+      cropUpdateInterval = null;
+    }
     cropMode = false;
     cropSelection = null;
   }
