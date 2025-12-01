@@ -67,9 +67,13 @@
         </div>
         
         <div class="editor-workspace">
-          <div class="preview-area">
-            <canvas id="previewCanvas" class="preview-canvas"></canvas>
-          </div>
+<!-- index.html の preview-area 部分を修正 -->
+<div class="preview-area">
+  <div class="canvas-container">
+    <canvas id="previewCanvas" class="preview-canvas"></canvas>
+    <canvas id="cropOverlay" class="crop-overlay"></canvas>
+  </div>
+</div>
           
           <div class="controls-sidebar">
             <div class="controls-panel" id="controlsPanel">

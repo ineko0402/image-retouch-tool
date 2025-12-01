@@ -221,6 +221,46 @@ export const effects = [
     }
   },
   {
+    id: 'crop',
+    name: 'トリミング',
+    desc: 'ドラッグ操作で画像を切り抜き',
+    icon: '✂',
+    controls: [
+      { 
+        id: 'preset', 
+        label: 'アスペクト比', 
+        type: 'select',
+        options: [
+          { value: 'free', label: '自由' },
+          { value: '1:1', label: '1:1（正方形）' },
+          { value: '4:3', label: '4:3' },
+          { value: '3:4', label: '3:4' },
+          { value: '16:9', label: '16:9' },
+          { value: '9:16', label: '9:16' }
+        ],
+        value: 'free'
+      },
+      { id: 'x', label: 'X位置', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
+      { id: 'y', label: 'Y位置', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
+      { id: 'width', label: '幅', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
+      { id: 'height', label: '高さ', min: 0, max: 10000, value: 0, unit: 'px', readonly: true }
+    ],
+    requiresInteraction: true,
+    apply: (canvas, ctx, img, params, cropSelection) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (cropSelection) {
+        ctx.drawImage(
+          img,
+          cropSelection.x, cropSelection.y, cropSelection.width, cropSelection.height,
+          0, 0, canvas.width, canvas.height
+        );
+      } else {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      }
+    }
+  },
+  {
     id: 'gradient',
     name: '方向性グラデーション',
     desc: '指定方向に暗く/明るくする',

@@ -41,10 +41,13 @@ export function generateControls(effect, onControlChange) {
         </select>
       `;
     } else {
+      const readonlyAttr = control.readonly ? 'disabled' : '';
+      const readonlyClass = control.readonly ? 'readonly' : '';
+      
       group.innerHTML = `
         <div class="control-label">
           <span>${control.label}</span>
-          <span class="control-value" id="value-${control.id}">${control.value}${control.unit}</span>
+          <span class="control-value ${readonlyClass}" id="value-${control.id}">${control.value}${control.unit}</span>
         </div>
         <input type="range" 
                id="control-${control.id}" 
@@ -52,20 +55,24 @@ export function generateControls(effect, onControlChange) {
                min="${control.min}" 
                max="${control.max}" 
                value="${control.value}" 
-               step="${control.step || 1}">
+               step="${control.step || 1}"
+               ${readonlyAttr}>
       `;
     }
     
     panel.appendChild(group);
     
     const input = document.getElementById(`control-${control.id}`);
-    input.addEventListener('input', (e) => {
-      if (control.type !== 'select') {
-        document.getElementById(`value-${control.id}`).textContent = 
-          e.target.value + control.unit;
-      }
-      onControlChange();
-    });
+    
+    if (!control.readonly) {
+      input.addEventListener('input', (e) => {
+        if (control.type !== 'select') {
+          document.getElementById(`value-${control.id}`).textContent = 
+            e.target.value + control.unit;
+        }
+        onControlChange();
+      });
+    }
   });
 }
 
@@ -89,4 +96,20 @@ export function resetControlValues(effect, onControlChange) {
     }
   });
   onControlChange();
+}
+
+export function updateControlValue(controlId, value) {
+  const valueElement = document.getElementById(`value-${controlId}`);
+  const inputElement = document.getElementById(`control-${controlId}`);
+  
+  if (valueElement && inputElement) {
+    const control = Array.from(document.querySelectorAll('[data-control]'))
+      .find(el => el.dataset.control === controlId);
+    
+    if (control) {
+      const unit = valueElement.textContent.replace(/[\d.-]/g, '').trim();
+      valueElement.textContent = `${value}${unit}`;
+      inputElement.value = value;
+    }
+  }
 }
