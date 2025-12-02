@@ -12,6 +12,9 @@ let cropMode = false;
 let cropSelection = null;
 let cropUpdateInterval = null;
 
+//js/editor.js の該当部分を修正
+
+// openEditor関数内、トリミングモードのif文の後に追加
 export function openEditor(effectId) {
   const effect = getEffectById(effectId);
   const state = getState();
@@ -47,7 +50,6 @@ export function openEditor(effectId) {
     const params = getControlValues(effect);
     initCropMode(canvas, overlay, state.originalImage, params);
     
-    // プリセット変更の監視
     const presetControl = document.getElementById('control-preset');
     if (presetControl) {
       presetControl.addEventListener('change', (e) => {
@@ -56,13 +58,55 @@ export function openEditor(effectId) {
       });
     }
     
-    // リアルタイムで選択範囲の情報を更新
     cropUpdateInterval = setInterval(() => {
       if (cropMode) {
         updateCropInfo();
       }
     }, 100);
-  } else {
+  } 
+  // 拡縮モードの場合
+  else if (effect.requiresSpecialHandling && effect.id === 'resize') {
+    // 初期値を設定
+    updateControlValue('width', state.originalImage.width);
+    updateControlValue('height', state.originalImage.height);
+    
+    // モード変更の監視
+    const modeControl = document.getElementById('control-mode');
+    if (modeControl) {
+      modeControl.addEventListener('change', () => {
+        updateResizeInfo();
+        handleControlChange();
+      });
+    }
+    
+    // 幅変更の監視（アスペクト比維持時）
+    const widthControl = document.getElementById('control-width');
+    if (widthControl) {
+      widthControl.addEventListener('input', () => {
+        const params = getControlValues(effect);
+        if (params.mode === 'pixel' && params.maintainAspect === 'on') {
+          const aspectRatio = state.originalImage.width / state.originalImage.height;
+          const newHeight = Math.round(params.width / aspectRatio);
+          updateControlValue('height', newHeight);
+        }
+        updateResizeInfo();
+      });
+    }
+    
+    // 各パラメータ変更時に出力サイズを更新
+    ['scale', 'width', 'height', 'longSide', 'shortSide', 'maintainAspect'].forEach(controlId => {
+      const control = document.getElementById(`control-${controlId}`);
+      if (control) {
+        control.addEventListener('input', () => {
+          updateResizeInfo();
+        });
+      }
+    });
+    
+    updateResizeInfo();
+    handleControlChange();
+  } 
+  else {
     cropMode = false;
     handleControlChange();
   }
@@ -71,6 +115,81 @@ export function openEditor(effectId) {
   setupExportSettings();
   
   setStep(3);
+}
+
+// updateResizeInfo関数を追加
+function updateResizeInfo() {
+  const state = getState();
+  const effect = state.currentEffect;
+  
+  if (!effect.calculateOutputSize) return;
+  
+  const params = getControlValues(effect);
+  const outputSize = effect.calculateOutputSize(
+    state.originalImage.width,
+    state.originalImage.height,
+    params
+  );
+  
+  updateControlValue('resultWidth', outputSize.width);
+  updateControlValue('resultHeight', outputSize.height);
+}
+
+// handleDownload関数を修正
+function handleDownload() {
+  const state = getState();
+  const params = getControlValues(state.currentEffect);
+  
+  const format = document.getElementById('imageFormat').value;
+  const quality = parseInt(document.getElementById('imageQuality').value) / 100;
+  
+  if (cropMode && cropSelection) {
+    const actualCrop = applyCrop(state.originalImage);
+    downloadCroppedImage(state.currentEffect, actualCrop, state.originalFileName, format, quality);
+  } else if (state.currentEffect.requiresSpecialHandling && state.currentEffect.id === 'resize') {
+    // 拡縮用のダウンロード処理
+    downloadResizedImage(state.currentEffect, params, state.originalImage, state.originalFileName, format, quality);
+  } else {
+    downloadImage(state.currentEffect, params, state.originalFileName, format, quality);
+  }
+}
+
+// downloadResizedImage関数を追加
+function downloadResizedImage(effect, params, originalImage, fileName, format = 'png', quality = 0.95) {
+  requestAnimationFrame(() => {
+    const outputSize = effect.calculateOutputSize(originalImage.width, originalImage.height, params);
+    
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = outputSize.width;
+    tempCanvas.height = outputSize.height;
+    
+    // 補間方法の設定
+    if (params.interpolation === 'pixelated') {
+      tempCtx.imageSmoothingEnabled = false;
+    } else if (params.interpolation === 'smooth') {
+      tempCtx.imageSmoothingEnabled = true;
+      tempCtx.imageSmoothingQuality = 'high';
+    } else {
+      tempCtx.imageSmoothingEnabled = true;
+      tempCtx.imageSmoothingQuality = 'medium';
+    }
+    
+    tempCtx.drawImage(originalImage, 0, 0, outputSize.width, outputSize.height);
+    
+    const mimeType = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+    const extension = format === 'jpeg' ? 'jpg' : 'png';
+    
+    tempCanvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = `${fileName}-resized.${extension}`;
+      link.href = url;
+      link.click();
+      
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+    }, mimeType, quality);
+  });
 }
 
 export function closeEditor() {
@@ -141,21 +260,6 @@ function handleReset() {
   }
 }
 
-function handleDownload() {
-  const state = getState();
-  const params = getControlValues(state.currentEffect);
-  
-  const format = document.getElementById('imageFormat').value;
-  const quality = parseInt(document.getElementById('imageQuality').value) / 100;
-  
-  if (cropMode && cropSelection) {
-    // トリミング用のダウンロード処理
-    const actualCrop = applyCrop(state.originalImage);
-    downloadCroppedImage(state.currentEffect, actualCrop, state.originalFileName, format, quality);
-  } else {
-    downloadImage(state.currentEffect, params, state.originalFileName, format, quality);
-  }
-}
 
 function downloadCroppedImage(effect, cropRect, fileName, format = 'png', quality = 0.95) {
   const state = getState();

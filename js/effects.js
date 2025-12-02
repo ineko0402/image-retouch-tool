@@ -411,7 +411,126 @@ export const effects = [
       
       ctx.putImageData(imageData, 0, 0);
     }
+  },
+  //js/effects.js に追加（配列の最後に追加）
+{
+  id: 'resize',
+  name: '拡縮',
+  desc: '画像のサイズを変更',
+  icon: '⇔',
+  controls: [
+    { 
+      id: 'mode', 
+      label: '拡縮モード', 
+      type: 'select',
+      options: [
+        { value: 'percent', label: 'パーセント指定' },
+        { value: 'pixel', label: 'ピクセル指定' },
+        { value: 'long', label: '長辺基準' },
+        { value: 'short', label: '短辺基準' }
+      ],
+      value: 'percent'
+    },
+    { id: 'scale', label: 'スケール', min: 10, max: 500, value: 100, unit: '%' },
+    { id: 'width', label: '幅', min: 1, max: 10000, value: 1000, unit: 'px' },
+    { id: 'height', label: '高さ', min: 1, max: 10000, value: 1000, unit: 'px' },
+    { 
+      id: 'maintainAspect', 
+      label: 'アスペクト比を維持', 
+      type: 'select',
+      options: [
+        { value: 'on', label: 'ON' },
+        { value: 'off', label: 'OFF' }
+      ],
+      value: 'on'
+    },
+    { id: 'longSide', label: '長辺サイズ', min: 1, max: 10000, value: 1920, unit: 'px' },
+    { id: 'shortSide', label: '短辺サイズ', min: 1, max: 10000, value: 1080, unit: 'px' },
+    { 
+      id: 'interpolation', 
+      label: '補間方法', 
+      type: 'select',
+      options: [
+        { value: 'auto', label: '自動' },
+        { value: 'pixelated', label: 'ニアレストネイバー' },
+        { value: 'smooth', label: 'バイリニア' }
+      ],
+      value: 'auto'
+    },
+    { id: 'resultWidth', label: '出力幅', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
+    { id: 'resultHeight', label: '出力高さ', min: 0, max: 10000, value: 0, unit: 'px', readonly: true }
+  ],
+  requiresSpecialHandling: true,
+  apply: (canvas, ctx, img, params) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 補間方法の設定
+    if (params.interpolation === 'pixelated') {
+      ctx.imageSmoothingEnabled = false;
+    } else if (params.interpolation === 'smooth') {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    } else {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'medium';
+    }
+    
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  },
+  calculateOutputSize: (originalWidth, originalHeight, params) => {
+    let outputWidth, outputHeight;
+    
+    switch (params.mode) {
+      case 'percent':
+        const scale = params.scale / 100;
+        outputWidth = Math.round(originalWidth * scale);
+        outputHeight = Math.round(originalHeight * scale);
+        break;
+        
+      case 'pixel':
+        if (params.maintainAspect === 'on') {
+          // アスペクト比を維持
+          const aspectRatio = originalWidth / originalHeight;
+          outputWidth = params.width;
+          outputHeight = Math.round(outputWidth / aspectRatio);
+        } else {
+          outputWidth = params.width;
+          outputHeight = params.height;
+        }
+        break;
+        
+      case 'long':
+        if (originalWidth >= originalHeight) {
+          // 横長または正方形
+          outputWidth = params.longSide;
+          outputHeight = Math.round(outputWidth * originalHeight / originalWidth);
+        } else {
+          // 縦長
+          outputHeight = params.longSide;
+          outputWidth = Math.round(outputHeight * originalWidth / originalHeight);
+        }
+        break;
+        
+      case 'short':
+        if (originalWidth <= originalHeight) {
+          // 縦長または正方形
+          outputWidth = params.shortSide;
+          outputHeight = Math.round(outputWidth * originalHeight / originalWidth);
+        } else {
+          // 横長
+          outputHeight = params.shortSide;
+          outputWidth = Math.round(outputHeight * originalWidth / originalHeight);
+        }
+        break;
+        
+      default:
+        outputWidth = originalWidth;
+        outputHeight = originalHeight;
+    }
+    
+    return { width: outputWidth, height: outputHeight };
   }
+}
 ];
 
 export function getEffectById(id) {

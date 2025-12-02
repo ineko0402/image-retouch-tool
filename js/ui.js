@@ -21,6 +21,8 @@ export function generateEffectPreviews(onEffectSelect) {
   });
 }
 
+//js/ui.js の generateControls関数を修正
+
 export function generateControls(effect, onControlChange) {
   const panel = document.getElementById('controlsPanel');
   panel.innerHTML = '';
@@ -28,6 +30,7 @@ export function generateControls(effect, onControlChange) {
   effect.controls.forEach(control => {
     const group = document.createElement('div');
     group.className = 'control-group';
+    group.id = `group-${control.id}`;
     
     if (control.type === 'select') {
       group.innerHTML = `
@@ -74,8 +77,50 @@ export function generateControls(effect, onControlChange) {
       });
     }
   });
+  
+  // 拡縮モードの場合、初期表示を調整
+  if (effect.id === 'resize') {
+    updateResizeControlVisibility();
+    
+    const modeControl = document.getElementById('control-mode');
+    if (modeControl) {
+      modeControl.addEventListener('change', updateResizeControlVisibility);
+    }
+  }
 }
 
+// 拡縮モードのコントロール表示/非表示を制御
+function updateResizeControlVisibility() {
+  const modeControl = document.getElementById('control-mode');
+  if (!modeControl) return;
+  
+  const mode = modeControl.value;
+  
+  // 全て非表示
+  const allGroups = ['scale', 'width', 'height', 'maintainAspect', 'longSide', 'shortSide'];
+  allGroups.forEach(id => {
+    const group = document.getElementById(`group-${id}`);
+    if (group) group.style.display = 'none';
+  });
+  
+  // モードに応じて表示
+  switch (mode) {
+    case 'percent':
+      document.getElementById('group-scale').style.display = 'block';
+      break;
+    case 'pixel':
+      document.getElementById('group-width').style.display = 'block';
+      document.getElementById('group-height').style.display = 'block';
+      document.getElementById('group-maintainAspect').style.display = 'block';
+      break;
+    case 'long':
+      document.getElementById('group-longSide').style.display = 'block';
+      break;
+    case 'short':
+      document.getElementById('group-shortSide').style.display = 'block';
+      break;
+  }
+}
 export function getControlValues(effect) {
   const params = {};
   effect.controls.forEach(control => {
