@@ -3,12 +3,12 @@
   "short_name": "画像加工",
   "icons": [
     {
-      "src": "/favicon_io/192x192.png",
+      "src": "favicon_io/192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/favicon_io/512x512.png",
+      "src": "favicon_io/512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
