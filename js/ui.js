@@ -179,17 +179,16 @@ export function resetControlValues(effect, onControlChange) {
 }
 
 export function updateControlValue(controlId, value) {
-  const valueElement = document.getElementById(`value-${controlId}`);
   const inputElement = document.getElementById(`control-${controlId}`);
   
-  if (valueElement && inputElement) {
-    const control = Array.from(document.querySelectorAll('[data-control]'))
-      .find(el => el.dataset.control === controlId);
+  if (inputElement) {
+    inputElement.value = value;
     
-    if (control) {
+    // スライダー型の場合は表示用のvalueも更新
+    const valueElement = document.getElementById(`value-${controlId}`);
+    if (valueElement) {
       const unit = valueElement.textContent.replace(/[\d.-]/g, '').trim();
       valueElement.textContent = `${value}${unit}`;
-      inputElement.value = value;
     }
   }
 }
