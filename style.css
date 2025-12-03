@@ -466,6 +466,41 @@ select:focus {
   border-color: #667eea;
 }
 
+/* 数値入力フィールド */
+.number-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.number-input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.number-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.number-input.readonly {
+  background: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.number-unit {
+  font-size: 13px;
+  color: #718096;
+  font-weight: 600;
+  min-width: 30px;
+}
+
 /* エクスポート設定 */
 .export-settings {
   background: white;
@@ -610,3 +645,4 @@ input[type="range"]:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+

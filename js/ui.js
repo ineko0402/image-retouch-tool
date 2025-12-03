@@ -43,9 +43,31 @@ export function generateControls(effect, onControlChange) {
           ).join('')}
         </select>
       `;
+    } else if (control.type === 'number') {
+      const readonlyAttr = control.readonly ? 'disabled' : '';
+      const readonlyClass = control.readonly ? 'readonly' : '';
+      
+      group.innerHTML = `
+        <div class="control-label">
+          <span>${control.label}</span>
+        </div>
+        <div class="number-input-wrapper">
+          <input type="number" 
+                 id="control-${control.id}" 
+                 data-control="${control.id}"
+                 min="${control.min}" 
+                 max="${control.max}" 
+                 value="${control.value}" 
+                 step="${control.step || 1}"
+                 class="number-input ${readonlyClass}"
+                 ${readonlyAttr}>
+          <span class="number-unit">${control.unit}</span>
+        </div>
+      `;
     } else {
       const readonlyAttr = control.readonly ? 'disabled' : '';
       const readonlyClass = control.readonly ? 'readonly' : '';
+      const hideSlider = control.hideSlider ? 'style="display:none;"' : '';
       
       group.innerHTML = `
         <div class="control-label">
@@ -59,7 +81,8 @@ export function generateControls(effect, onControlChange) {
                max="${control.max}" 
                value="${control.value}" 
                step="${control.step || 1}"
-               ${readonlyAttr}>
+               ${readonlyAttr}
+               ${hideSlider}>
       `;
     }
     
@@ -68,13 +91,19 @@ export function generateControls(effect, onControlChange) {
     const input = document.getElementById(`control-${control.id}`);
     
     if (!control.readonly) {
-      input.addEventListener('input', (e) => {
-        if (control.type !== 'select') {
+      if (control.type === 'number') {
+        input.addEventListener('input', (e) => {
+          onControlChange();
+        });
+      } else if (control.type !== 'select') {
+        input.addEventListener('input', (e) => {
           document.getElementById(`value-${control.id}`).textContent = 
             e.target.value + control.unit;
-        }
-        onControlChange();
-      });
+          onControlChange();
+        });
+      } else {
+        input.addEventListener('change', onControlChange);
+      }
     }
   });
   
@@ -135,9 +164,15 @@ export function resetControlValues(effect, onControlChange) {
   effect.controls.forEach(control => {
     const input = document.getElementById(`control-${control.id}`);
     input.value = control.value;
-    if (control.type !== 'select') {
-      document.getElementById(`value-${control.id}`).textContent = 
-        control.value + control.unit;
+    
+    if (control.type === 'number') {
+      // 数値入力型は何もしない（inputのvalueのみ更新）
+    } else if (control.type !== 'select') {
+      // スライダー型の場合は表示用のvalueも更新
+      const valueElement = document.getElementById(`value-${control.id}`);
+      if (valueElement) {
+        valueElement.textContent = control.value + control.unit;
+      }
     }
   });
   onControlChange();

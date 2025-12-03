@@ -255,6 +255,17 @@ function handleReset() {
     }
     
     updateCropInfo();
+  } else if (state.currentEffect.requiresSpecialHandling && state.currentEffect.id === 'resize') {
+    // 拡縮のリセット
+    resetControlValues(state.currentEffect, handleControlChange);
+    
+    // 元画像サイズに基づいて初期値を再設定
+    updateControlValue('width', state.originalImage.width);
+    updateControlValue('height', state.originalImage.height);
+    
+    // 出力サイズを更新
+    updateResizeInfo();
+    handleControlChange();
   } else {
     resetControlValues(state.currentEffect, handleControlChange);
   }

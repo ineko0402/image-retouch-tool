@@ -431,9 +431,9 @@ export const effects = [
       ],
       value: 'percent'
     },
-    { id: 'scale', label: 'スケール', min: 10, max: 500, value: 100, unit: '%' },
-    { id: 'width', label: '幅', min: 1, max: 10000, value: 1000, unit: 'px' },
-    { id: 'height', label: '高さ', min: 1, max: 10000, value: 1000, unit: 'px' },
+    { id: 'scale', label: 'スケール', type: 'number', min: 10, max: 500, value: 100, unit: '%' },
+    { id: 'width', label: '幅', type: 'number', min: 1, max: 10000, value: 1000, unit: 'px' },
+    { id: 'height', label: '高さ', type: 'number', min: 1, max: 10000, value: 1000, unit: 'px' },
     { 
       id: 'maintainAspect', 
       label: 'アスペクト比を維持', 
@@ -444,8 +444,8 @@ export const effects = [
       ],
       value: 'on'
     },
-    { id: 'longSide', label: '長辺サイズ', min: 1, max: 10000, value: 1920, unit: 'px' },
-    { id: 'shortSide', label: '短辺サイズ', min: 1, max: 10000, value: 1080, unit: 'px' },
+    { id: 'longSide', label: '長辺サイズ', type: 'number', min: 1, max: 10000, value: 1920, unit: 'px' },
+    { id: 'shortSide', label: '短辺サイズ', type: 'number', min: 1, max: 10000, value: 1080, unit: 'px' },
     { 
       id: 'interpolation', 
       label: '補間方法', 
@@ -457,8 +457,8 @@ export const effects = [
       ],
       value: 'auto'
     },
-    { id: 'resultWidth', label: '出力幅', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
-    { id: 'resultHeight', label: '出力高さ', min: 0, max: 10000, value: 0, unit: 'px', readonly: true }
+    { id: 'resultWidth', label: '出力幅', type: 'number', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
+    { id: 'resultHeight', label: '出力高さ', type: 'number', min: 0, max: 10000, value: 0, unit: 'px', readonly: true }
   ],
   requiresSpecialHandling: true,
   apply: (canvas, ctx, img, params) => {
