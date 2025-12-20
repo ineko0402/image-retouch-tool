@@ -1,23 +1,18 @@
-//js/steps.js
-// ステップインジケーター管理
-
-let currentStep = 1;
+/**
+ * Steps Controller
+ */
+import { store } from './store/store.js';
 
 export function setStep(step) {
-  currentStep = step;
-  updateStepIndicator();
+  store.setStep(step);
+  updateStepIndicator(step);
 }
 
-export function getCurrentStep() {
-  return currentStep;
-}
-
-function updateStepIndicator() {
+function updateStepIndicator(currentStep) {
   for (let i = 1; i <= 3; i++) {
     const stepElement = document.getElementById(`step${i}`);
-    
     stepElement.classList.remove('active', 'completed');
-    
+
     if (i === currentStep) {
       stepElement.classList.add('active');
     } else if (i < currentStep) {
@@ -27,15 +22,16 @@ function updateStepIndicator() {
 }
 
 export function setupStepNavigation() {
-  // 完了したステップをクリックで戻れるようにする
+  const state = store.getState();
+
   document.getElementById('step1').addEventListener('click', () => {
-    if (currentStep > 1) {
+    if (store.getState().ui.currentStep > 1) {
       goToUploadScreen();
     }
   });
-  
+
   document.getElementById('step2').addEventListener('click', () => {
-    if (currentStep > 2) {
+    if (store.getState().ui.currentStep > 2) {
       goToEffectSelection();
     }
   });

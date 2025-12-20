@@ -1,25 +1,25 @@
-//js/upload.js
-// 画像アップロード処理
-
-import { setOriginalImage } from './state.js';
+/**
+ * Upload Controller
+ */
+import { store } from './store/store.js';
 import { setStep } from './steps.js';
 
 export function setupUpload() {
   const uploadArea = document.getElementById('uploadArea');
   const fileInput = document.getElementById('fileInput');
   const changeImageBtn = document.getElementById('changeImageBtn');
-  
+
   uploadArea.addEventListener('click', () => fileInput.click());
-  
+
   uploadArea.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadArea.classList.add('dragover');
   });
-  
+
   uploadArea.addEventListener('dragleave', () => {
     uploadArea.classList.remove('dragover');
   });
-  
+
   uploadArea.addEventListener('drop', (e) => {
     e.preventDefault();
     uploadArea.classList.remove('dragover');
@@ -27,18 +27,18 @@ export function setupUpload() {
       loadImage(e.dataTransfer.files[0]);
     }
   });
-  
+
   fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
       loadImage(e.target.files[0]);
     }
   });
-  
-  // 画像を選び直すボタン
+
+  // Change Image Button
   changeImageBtn.addEventListener('click', () => {
     document.getElementById('effectSelection').classList.add('hidden');
     document.getElementById('uploadSection').classList.remove('hidden');
-    fileInput.value = ''; // ファイル入力をリセット
+    fileInput.value = '';
     setStep(1);
   });
 }
@@ -50,9 +50,9 @@ function loadImage(file) {
     img.onload = () => {
       const fileName = file.name.replace(/\.[^/.]+$/, '');
       const fileType = detectFileType(file);
-      
-      setOriginalImage(img, fileName, fileType);
-      
+
+      store.setImage(img, fileName, fileType);
+
       document.getElementById('uploadSection').classList.add('hidden');
       document.getElementById('effectSelection').classList.remove('hidden');
       setStep(2);
@@ -64,19 +64,12 @@ function loadImage(file) {
 
 function detectFileType(file) {
   const mimeType = file.type.toLowerCase();
-  
-  if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
-    return 'jpeg';
-  } else if (mimeType === 'image/png') {
-    return 'png';
-  }
-  
+
+  if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') return 'jpeg';
+  if (mimeType === 'image/png') return 'png';
+
   const extension = file.name.split('.').pop().toLowerCase();
-  if (extension === 'jpg' || extension === 'jpeg') {
-    return 'jpeg';
-  } else if (extension === 'png') {
-    return 'png';
-  }
-  
+  if (extension === 'jpg' || extension === 'jpeg') return 'jpeg';
+
   return 'png';
 }
