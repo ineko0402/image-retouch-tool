@@ -8,11 +8,10 @@ let cropState = {
     dragType: null,
     startX: 0,
     startY: 0,
-    startSelection: null, // Saved selection on drag start
+    startSelection: null,
     aspectRatio: null
 };
 
-// DOM elements (can be passed in init, or assumed from View)
 let elements = {
     canvas: null,
     overlay: null,
@@ -26,18 +25,13 @@ export function initCropMode(canvas, overlay, image, params) {
     elements.ctx = canvas.getContext('2d');
     elements.overlayCtx = overlay.getContext('2d');
 
-    // Draw original image to canvas
-    // We assume canvas is already sized correctly by Editor Logic, or we resize?
-    // Editor logic sets canvas size.
     elements.ctx.clearRect(0, 0, canvas.width, canvas.height);
     elements.ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    // Setup overlay
     overlay.width = canvas.width;
     overlay.height = canvas.height;
     overlay.classList.add('active');
 
-    // Initial Selection (80% center)
     const margin = 0.1;
     const initialSelection = {
         x: canvas.width * margin,
@@ -47,15 +41,12 @@ export function initCropMode(canvas, overlay, image, params) {
     };
 
     store.updateCropSelection(initialSelection);
-
-    // Set Aspect Ratio
     updateAspectRatio(params.preset);
 
-    // Bind Events
     overlay.addEventListener('mousedown', handleMouseDown);
     overlay.addEventListener('mousemove', handleMouseMove);
     overlay.addEventListener('mouseup', handleMouseUp);
-    overlay.addEventListener('mouseleave', handleMouseUp); // Stop dragging if leaves
+    overlay.addEventListener('mouseleave', handleMouseUp);
 
     drawCropUI();
     store.setCropMode(true);
@@ -116,15 +107,18 @@ function constrainSelection(sel) {
     if (sel.x + sel.width > width) sel.x = width - sel.width;
     if (sel.y + sel.height > height) sel.y = height - sel.height;
 
-    // Safety for too large rect
     if (sel.width > width) { sel.width = width; sel.x = 0; }
     if (sel.height > height) { sel.height = height; sel.y = 0; }
 }
 
 function handleMouseDown(e) {
     const rect = elements.overlay.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // Scaling for HiDPI or CSS resize
+    const scaleX = elements.overlay.width / rect.width;
+    const scaleY = elements.overlay.height / rect.height;
+
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     const dragType = detectDragType(x, y);
     if (dragType) {
@@ -138,8 +132,11 @@ function handleMouseDown(e) {
 
 function handleMouseMove(e) {
     const rect = elements.overlay.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = elements.overlay.width / rect.width;
+    const scaleY = elements.overlay.height / rect.height;
+
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
 
     if (cropState.isDragging) {
         const dx = x - cropState.startX;
@@ -162,19 +159,16 @@ function detectDragType(x, y) {
     if (!sel) return null;
 
     const handleSize = 12;
-    // Corners
     if (isNear(x, sel.x, handleSize) && isNear(y, sel.y, handleSize)) return 'nw';
     if (isNear(x, sel.x + sel.width, handleSize) && isNear(y, sel.y, handleSize)) return 'ne';
     if (isNear(x, sel.x, handleSize) && isNear(y, sel.y + sel.height, handleSize)) return 'sw';
     if (isNear(x, sel.x + sel.width, handleSize) && isNear(y, sel.y + sel.height, handleSize)) return 'se';
 
-    // Edges
     if (isNear(x, sel.x + sel.width / 2, handleSize) && isNear(y, sel.y, handleSize)) return 'n';
     if (isNear(x, sel.x + sel.width / 2, handleSize) && isNear(y, sel.y + sel.height, handleSize)) return 's';
     if (isNear(x, sel.x, handleSize) && isNear(y, sel.y + sel.height / 2, handleSize)) return 'w';
     if (isNear(x, sel.x + sel.width, handleSize) && isNear(y, sel.y + sel.height / 2, handleSize)) return 'e';
 
-    // Center
     if (x >= sel.x && x <= sel.x + sel.width && y >= sel.y && y <= sel.y + sel.height) return 'move';
 
     return null;
@@ -197,7 +191,6 @@ function updateSelection(dx, dy) {
         sel.x = start.x + dx;
         sel.y = start.y + dy;
     } else {
-        // Resize logic (simplified)
         if (type.includes('w')) { sel.x = start.x + dx; sel.width = start.width - dx; }
         if (type.includes('e')) { sel.width = start.width + dx; }
         if (type.includes('n')) { sel.y = start.y + dy; sel.height = start.height - dy; }
@@ -205,16 +198,13 @@ function updateSelection(dx, dy) {
     }
 
     if (cropState.aspectRatio && type !== 'move') {
-        // Simple aspect ratio maintain logic
-        // This is complex to get right with all directions, but let's assume height follows width for simplicity or vice versa
-        // Or re-implement full logic if needed. For now:
         if (type.includes('e') || type.includes('w')) {
             sel.height = sel.width / cropState.aspectRatio;
-            // Center Y? Or keep top?
+        } else {
+            sel.width = sel.height * cropState.aspectRatio;
         }
     }
 
-    // Min size
     if (sel.width < 50) sel.width = 50;
     if (sel.height < 50) sel.height = 50;
 
@@ -229,19 +219,15 @@ function drawCropUI() {
 
     ctx.clearRect(0, 0, elements.overlay.width, elements.overlay.height);
 
-    // Dim
     ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
     ctx.fillRect(0, 0, elements.overlay.width, elements.overlay.height);
 
-    // Clear selection
     ctx.clearRect(sel.x, sel.y, sel.width, sel.height);
 
-    // Border
     ctx.strokeStyle = '#667eea';
     ctx.lineWidth = 2;
     ctx.strokeRect(sel.x, sel.y, sel.width, sel.height);
 
-    // Grid (Thirds)
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -250,9 +236,6 @@ function drawCropUI() {
     ctx.moveTo(sel.x, sel.y + sel.height / 3); ctx.lineTo(sel.x + sel.width, sel.y + sel.height / 3);
     ctx.moveTo(sel.x, sel.y + 2 * sel.height / 3); ctx.lineTo(sel.x + sel.width, sel.y + 2 * sel.height / 3);
     ctx.stroke();
-
-    // Handles... (simplified call)
-    // For brevity, skipping drawing handles circles, just functional logic
 }
 
 export function getCurrentCropSelection() {

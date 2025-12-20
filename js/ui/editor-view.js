@@ -49,13 +49,13 @@ export const EditorView = {
                 const select = this.createSelect(control, params[control.id]);
                 select.addEventListener('change', (e) => {
                     onParamChange(control.id, e.target.value);
-                    this.updateDependentControls(effect, params); // Handle visibility/etc
+                    if (effect.id === 'resize') {
+                        this.updateResizeVisibility(e.target.value);
+                    }
                 });
                 group.appendChild(this.createLabel(control.label));
                 group.appendChild(select);
             } else if (control.type === 'number') {
-                // ... (Similar logic to existing ui.js but cleaner)
-                // For brevity and time, I'll simplify or use innerHTML
                 group.innerHTML = `
           <div class="control-label"><span>${control.label}</span></div>
           <div class="number-input-wrapper">
@@ -72,7 +72,7 @@ export const EditorView = {
                     input.addEventListener('input', (e) => onParamChange(control.id, parseFloat(e.target.value)));
                 }
             } else {
-                // Slider
+                // Slider or Others
                 group.innerHTML = `
           <div class="control-label">
             <span>${control.label}</span>
@@ -84,11 +84,13 @@ export const EditorView = {
         `;
                 const input = group.querySelector('input');
                 const display = group.querySelector('.control-value');
-                input.addEventListener('input', (e) => {
-                    const val = parseFloat(e.target.value);
-                    display.textContent = `${val}${control.unit}`;
-                    onParamChange(control.id, val);
-                });
+                if (input) {
+                    input.addEventListener('input', (e) => {
+                        const val = parseFloat(e.target.value);
+                        display.textContent = `${val}${control.unit}`;
+                        onParamChange(control.id, val);
+                    });
+                }
             }
             panel.appendChild(group);
         });
@@ -147,12 +149,10 @@ export const EditorView = {
         this.elements.resetBtn.onclick = handlers.reset;
         this.elements.downloadBtn.onclick = handlers.download;
 
-        // Comparison
         const btn = this.elements.toggleComparison;
         btn.onmousedown = handlers.startCompare;
         btn.onmouseup = btn.onmouseleave = handlers.endCompare;
 
-        // Export settings
         this.elements.formatSelect.onchange = (e) => handlers.changeFormat(e.target.value);
         this.elements.qualitySlider.oninput = (e) => {
             this.elements.qualityValue.textContent = `${e.target.value}%`;
