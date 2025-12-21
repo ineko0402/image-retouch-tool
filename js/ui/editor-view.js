@@ -74,20 +74,20 @@ export const EditorView = {
             } else {
                 // Slider or Others
                 group.innerHTML = `
-          <div class="control-label">
-            <span>${control.label}</span>
-            <span class="control-value" id="value-${control.id}">${params[control.id]}${control.unit}</span>
-          </div>
-          <input type="range" id="control-${control.id}"
-                 min="${control.min}" max="${control.max}"
-                 value="${params[control.id]}" step="${control.step || 1}">
-        `;
+            <div class="control-label">
+              <span>${control.label}</span>
+              <span class="control-value" id="value-${control.id}" data-unit="${control.unit}">${params[control.id]} / ${control.max}${control.unit}</span>
+            </div>
+            <input type="range" id="control-${control.id}"
+                   min="${control.min}" max="${control.max}"
+                   value="${params[control.id]}" step="${control.step || 1}">
+          `;
                 const input = group.querySelector('input');
                 const display = group.querySelector('.control-value');
                 if (input) {
                     input.addEventListener('input', (e) => {
                         const val = parseFloat(e.target.value);
-                        display.textContent = `${val}${control.unit}`;
+                        display.textContent = `${val} / ${input.max}${control.unit}`;
                         onParamChange(control.id, val);
                     });
                 }
@@ -141,7 +141,10 @@ export const EditorView = {
         const input = document.getElementById(`control-${id}`);
         if (input) input.value = value;
         const display = document.getElementById(`value-${id}`);
-        if (display) display.textContent = `${value}${unit}`;
+        if (display && input) {
+            const u = unit || display.dataset.unit || '';
+            display.textContent = `${value} / ${input.max}${u}`;
+        }
     },
 
     bindEvents(handlers) {
