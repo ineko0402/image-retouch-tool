@@ -73,13 +73,15 @@ export const EditorView = {
                 }
             } else {
                 // Slider or Others
+                const maxDisplay = (control.max !== undefined && control.max !== null) ? ` / ${control.max}` : '';
                 group.innerHTML = `
             <div class="control-label">
               <span>${control.label}</span>
-              <span class="control-value" id="value-${control.id}" data-unit="${control.unit}">${params[control.id]} / ${control.max}${control.unit}</span>
+              <span class="control-value" id="value-${control.id}" data-unit="${control.unit}">${params[control.id]}${maxDisplay}${control.unit}</span>
             </div>
             <input type="range" id="control-${control.id}"
-                   min="${control.min}" max="${control.max}"
+                   min="${control.min !== undefined ? control.min : 0}" 
+                   max="${control.max !== undefined ? control.max : 100}"
                    value="${params[control.id]}" step="${control.step || 1}">
           `;
                 const input = group.querySelector('input');
@@ -87,7 +89,8 @@ export const EditorView = {
                 if (input) {
                     input.addEventListener('input', (e) => {
                         const val = parseFloat(e.target.value);
-                        display.textContent = `${val} / ${input.max}${control.unit}`;
+                        const maxDisp = input.max ? ` / ${input.max}` : '';
+                        display.textContent = `${val}${maxDisp}${control.unit}`;
                         onParamChange(control.id, val);
                     });
                 }
@@ -143,7 +146,8 @@ export const EditorView = {
         const display = document.getElementById(`value-${id}`);
         if (display && input) {
             const u = unit || display.dataset.unit || '';
-            display.textContent = `${value} / ${input.max}${u}`;
+            const maxDisp = input.max ? ` / ${input.max}` : '';
+            display.textContent = `${value}${maxDisp}${u}`;
         }
     },
 

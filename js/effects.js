@@ -92,9 +92,20 @@ export const effects = [
         ],
         value: 'left'
       },
+      {
+        id: 'type',
+        label: '効果',
+        type: 'select',
+        options: [
+          { value: 'shadow', label: '影（暗く）' },
+          { value: 'highlight', label: 'ハイライト（明るく）' }
+        ],
+        value: 'shadow'
+      },
       { id: 'strength', label: '強度', min: 0, max: 1, value: 0.7, step: 0.05, unit: '' },
       { id: 'range', label: '範囲', min: 10, max: 100, value: 50, unit: '%' }
-    ]
+    ],
+    requiresSpecialHandling: true
   },
   {
     id: 'spotlight',

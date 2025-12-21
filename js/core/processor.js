@@ -336,8 +336,12 @@ export const Processor = {
         }
 
         const gradient = ctx.createLinearGradient(x0, y0, x1, y1);
-        gradient.addColorStop(0, `rgba(0,0,0,${params.strength})`);
-        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+
+        const isHighlight = params.type === 'highlight';
+        const color = isHighlight ? '255,255,255' : '0,0,0';
+
+        gradient.addColorStop(0, `rgba(${color},${params.strength})`);
+        gradient.addColorStop(1, `rgba(${color},0)`);
 
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
