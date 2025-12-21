@@ -119,7 +119,8 @@ export const effects = [
       { id: 'height', label: '高さ', min: 10, max: 100, value: 30, unit: '%' },
       { id: 'darkness', label: '暗さ', min: 0, max: 1, value: 0.7, step: 0.05, unit: '' },
       { id: 'feather', label: 'ぼかし', min: 0, max: 100, value: 20, unit: '%' }
-    ]
+    ],
+    requiresSpecialHandling: true
   },
   {
     id: 'adjust',
