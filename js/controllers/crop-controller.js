@@ -241,3 +241,10 @@ function drawCropUI() {
 export function getCurrentCropSelection() {
     return store.getState().crop.selection;
 }
+
+export function setCropSelection(newSelection) {
+    const sel = { ...newSelection };
+    constrainSelection(sel);
+    store.updateCropSelection(sel);
+    drawCropUI();
+}

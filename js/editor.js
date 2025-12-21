@@ -6,12 +6,21 @@ import { getEffectById } from './effects.js';
 import { EditorView } from './ui/editor-view.js';
 import { Processor } from './core/processor.js';
 import { setStep } from './steps.js';
-import { initCropMode, destroyCropMode, updateAspectRatio, getCurrentCropSelection } from './controllers/crop-controller.js';
+import { initCropMode, destroyCropMode, updateAspectRatio, getCurrentCropSelection, setCropSelection } from './controllers/crop-controller.js';
 import { debounce } from './utils/utils.js';
 
 export function openEditor(effectId) {
   const effect = getEffectById(effectId);
   store.setEffect(effectId);
+  const image = store.getState().image.original;
+
+  // Dynamic Max Value Injection for Crop
+  if (effectId === 'crop' && image) {
+    effect.controls.forEach(c => {
+      if (['x', 'width'].includes(c.id)) c.max = image.width;
+      if (['y', 'height'].includes(c.id)) c.max = image.height;
+    });
+  }
 
   // Initialize store params with defaults
   const defaults = {};
@@ -26,7 +35,7 @@ export function openEditor(effectId) {
   // Canvas Setup
   const canvas = document.getElementById('previewCanvas');
   const overlay = document.getElementById('cropOverlay');
-  const image = store.getState().image.original;
+
 
   // Initial Render
   render();
@@ -67,13 +76,21 @@ export function openEditor(effectId) {
     }
 
     // Handle Crop Preset Change
-    if (effect.id === 'crop' && id === 'preset') {
-      updateAspectRatio(val);
-      const sel = getCurrentCropSelection();
-      EditorView.updateControlValue('x', Math.round(sel.x));
-      EditorView.updateControlValue('y', Math.round(sel.y));
-      EditorView.updateControlValue('width', Math.round(sel.width));
-      EditorView.updateControlValue('height', Math.round(sel.height));
+    if (effect.id === 'crop') {
+      if (id === 'preset') {
+        updateAspectRatio(val);
+        const sel = getCurrentCropSelection();
+        EditorView.updateControlValue('x', Math.round(sel.x));
+        EditorView.updateControlValue('y', Math.round(sel.y));
+        EditorView.updateControlValue('width', Math.round(sel.width));
+        EditorView.updateControlValue('height', Math.round(sel.height));
+      }
+      // Handle Slider/Input Changes
+      else if (['x', 'y', 'width', 'height'].includes(id)) {
+        const currentSel = getCurrentCropSelection();
+        const newSel = { ...currentSel, [id]: val };
+        setCropSelection(newSel);
+      }
     }
 
     store.updateEffectParams(updates);

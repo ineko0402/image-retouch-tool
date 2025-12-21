@@ -67,10 +67,10 @@ export const effects = [
         ],
         value: 'free'
       },
-      { id: 'x', label: 'X位置', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
-      { id: 'y', label: 'Y位置', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
-      { id: 'width', label: '幅', min: 0, max: 10000, value: 0, unit: 'px', readonly: true },
-      { id: 'height', label: '高さ', min: 0, max: 10000, value: 0, unit: 'px', readonly: true }
+      { id: 'x', label: 'X位置', min: 0, max: 10000, value: 0, unit: 'px' },
+      { id: 'y', label: 'Y位置', min: 0, max: 10000, value: 0, unit: 'px' },
+      { id: 'width', label: '幅', min: 0, max: 10000, value: 0, unit: 'px' },
+      { id: 'height', label: '高さ', min: 0, max: 10000, value: 0, unit: 'px' }
     ],
     requiresInteraction: true
   },
