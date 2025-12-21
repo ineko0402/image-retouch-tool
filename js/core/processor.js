@@ -348,37 +348,57 @@ export const Processor = {
     },
 
     spotlight: (ctx, width, height, params) => {
+        // Create offscreen canvas for the overlay
+        const overlayCanvas = document.createElement('canvas');
+        overlayCanvas.width = width;
+        overlayCanvas.height = height;
+        const ovCtx = overlayCanvas.getContext('2d');
+
+        // 1. Fill with darkness
+        ovCtx.fillStyle = `rgba(0, 0, 0, ${params.darkness})`;
+        ovCtx.fillRect(0, 0, width, height);
+
+        // 2. Prepare to cut out the hole
+        ovCtx.globalCompositeOperation = 'destination-out';
+
+        // 3. Apply feathering using filter
+        // Note: params.feather is percentage, convert to px roughly based on min dimension
+        const featherPx = (Math.min(width, height) * (params.feather / 100)) / 2;
+        if (featherPx > 0) {
+            ovCtx.filter = `blur(${featherPx}px)`;
+        }
+
+        // 4. Define shape dimensions
         const rectX = width * (params.x / 100) - (width * params.width / 200);
         const rectY = height * (params.y / 100) - (height * params.height / 200);
         const rectW = width * (params.width / 100);
         const rectH = height * (params.height / 100);
-        const featherSize = Math.min(rectW, rectH) * (params.feather / 100);
 
-        ctx.fillStyle = `rgba(0,0,0,${params.darkness})`;
-        ctx.fillRect(0, 0, width, height);
+        // 5. Draw the cutout shape (opacity doesn't matter for destination-out, just shape)
+        ovCtx.fillStyle = 'rgba(0,0,0,1)';
+        ovCtx.beginPath();
 
-        ctx.globalCompositeOperation = 'destination-out';
-
-        if (featherSize > 0) {
-            const innerRadius = Math.max(0, Math.min(rectW, rectH) / 2 - featherSize);
-            const outerRadius = Math.min(rectW, rectH) / 2 + featherSize;
-
-            const gradient = ctx.createRadialGradient(
-                rectX + rectW / 2, rectY + rectH / 2, innerRadius,
-                rectX + rectW / 2, rectY + rectH / 2, outerRadius
-            );
-            gradient.addColorStop(0, `rgba(0,0,0,${params.darkness})`);
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-
-            ctx.fillStyle = gradient;
-            ctx.fillRect(rectX - featherSize, rectY - featherSize,
-                rectW + featherSize * 2, rectH + featherSize * 2);
+        if (params.shape === 'rectangle') {
+            ovCtx.rect(rectX, rectY, rectW, rectH);
         } else {
-            ctx.fillStyle = `rgba(0,0,0,${params.darkness})`;
-            ctx.fillRect(rectX, rectY, rectW, rectH);
+            // Default to circle/ellipse
+            // Ellipse is better to fit the width/height aspect
+            ovCtx.ellipse(
+                rectX + rectW / 2,
+                rectY + rectH / 2,
+                Math.abs(rectW / 2),
+                Math.abs(rectH / 2),
+                0, 0, 2 * Math.PI
+            );
         }
+        ovCtx.fill();
 
-        ctx.globalCompositeOperation = 'source-over';
+        // 6. Draw overlay onto main canvas
+        // Reset composite operation on main canvas just in case, though we usually just drawImage over
+        ctx.save();
+        ctx.globalAlpha = 1; // Ensure we draw the overlay fully
+        ctx.drawImage(overlayCanvas, 0, 0);
+        ctx.restore();
     },
 
     // Resize and Crop return new dimensions/canvas, usually handled by specific logic

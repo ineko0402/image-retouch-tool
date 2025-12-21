@@ -113,6 +113,16 @@ export const effects = [
     desc: '全体を暗くして指定範囲を強調',
     icon: '□',
     controls: [
+      {
+        id: 'shape',
+        label: '形状',
+        type: 'select',
+        options: [
+          { value: 'circle', label: '円' },
+          { value: 'rectangle', label: '長方形' }
+        ],
+        value: 'circle'
+      },
       { id: 'x', label: 'X位置', min: 0, max: 100, value: 50, unit: '%' },
       { id: 'y', label: 'Y位置', min: 0, max: 100, value: 50, unit: '%' },
       { id: 'width', label: '幅', min: 10, max: 100, value: 40, unit: '%' },
