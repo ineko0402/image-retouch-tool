@@ -76,59 +76,9 @@ export const Processor = {
         return imageData;
     },
 
-    sepia: (imageData, params) => {
-        const data = imageData.data;
-        const intensity = params.intensity / 100;
 
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
 
-            const tr = 0.393 * r + 0.769 * g + 0.189 * b;
-            const tg = 0.349 * r + 0.686 * g + 0.168 * b;
-            const tb = 0.272 * r + 0.534 * g + 0.131 * b;
 
-            data[i] = r + (tr - r) * intensity;
-            data[i + 1] = g + (tg - g) * intensity;
-            data[i + 2] = b + (tb - b) * intensity;
-        }
-        return imageData;
-    },
-
-    grayscale: (imageData, params) => {
-        const data = imageData.data;
-        const contrastFactor = (params.contrast + 100) / 100;
-
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-
-            let gray;
-            switch (params.method) {
-                case 'luminosity':
-                    gray = 0.299 * r + 0.587 * g + 0.114 * b;
-                    break;
-                case 'average':
-                    gray = (r + g + b) / 3;
-                    break;
-                case 'desaturation':
-                    gray = (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
-                    break;
-                default:
-                    gray = 0.299 * r + 0.587 * g + 0.114 * b;
-            }
-
-            gray = ((gray / 255 - 0.5) * contrastFactor + 0.5) * 255;
-            gray = Math.max(0, Math.min(255, gray));
-
-            data[i] = gray;
-            data[i + 1] = gray;
-            data[i + 2] = gray;
-        }
-        return imageData;
-    },
 
     adjust: (imageData, params) => {
         const data = imageData.data;
@@ -161,65 +111,7 @@ export const Processor = {
         return imageData;
     },
 
-    colorOverlay: (imageData, params) => {
-        const data = imageData.data;
-        // HSL to RGB helper
-        const hslToRgb = (h, s, l) => {
-            let r, g, b;
-            if (s === 0) {
-                r = g = b = l;
-            } else {
-                const hue2rgb = (p, q, t) => {
-                    if (t < 0) t += 1;
-                    if (t > 1) t -= 1;
-                    if (t < 1 / 6) return p + (q - p) * 6 * t;
-                    if (t < 1 / 2) return q;
-                    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-                    return p;
-                };
-                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                const p = 2 * l - q;
-                r = hue2rgb(p, q, h + 1 / 3);
-                g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1 / 3);
-            }
-            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-        };
 
-        const h = params.hue / 360;
-        const s = params.saturation / 100;
-        const l = 0.5;
-        const [overlayR, overlayG, overlayB] = hslToRgb(h, s, l);
-        const opacity = params.opacity / 100;
-
-        const blendFunctions = {
-            normal: (base, overlay) => overlay,
-            multiply: (base, overlay) => (base * overlay) / 255,
-            screen: (base, overlay) => 255 - ((255 - base) * (255 - overlay)) / 255,
-            overlay: (base, overlay) => {
-                return base < 128
-                    ? (2 * base * overlay) / 255
-                    : 255 - (2 * (255 - base) * (255 - overlay)) / 255;
-            }
-        };
-
-        const blendFunc = blendFunctions[params.blendMode] || blendFunctions.normal;
-
-        for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
-
-            const blendedR = blendFunc(r, overlayR);
-            const blendedG = blendFunc(g, overlayG);
-            const blendedB = blendFunc(b, overlayB);
-
-            data[i] = r + (blendedR - r) * opacity;
-            data[i + 1] = g + (blendedG - g) * opacity;
-            data[i + 2] = b + (blendedB - b) * opacity;
-        }
-        return imageData;
-    },
 
     temperature: (imageData, params) => {
         const data = imageData.data;
@@ -253,61 +145,7 @@ export const Processor = {
         return imageData;
     },
 
-    rounded: (imageData, params) => {
-        const data = imageData.data;
-        const width = imageData.width;
-        const height = imageData.height;
 
-        const bgColors = {
-            transparent: [0, 0, 0, 0],
-            white: [255, 255, 255, 255],
-            black: [0, 0, 0, 255],
-            gray: [128, 128, 128, 255]
-        };
-        const bgColor = bgColors[params.background] || bgColors.transparent;
-
-        const radiusPercent = params.radius / 100;
-        const exponent = params.exponent;
-        const useAntialias = params.antialias === 'on';
-        const cornerRadius = Math.min(width, height) * radiusPercent * 0.5;
-
-        // Using MathUtils logic directly inside loop for performance or via call?
-        // Calling function in tight loop is slow in JS, but for readability let's duplicate or inline.
-        // Let's inline the relevant parts of MathUtils.isInsideSuperEllipse for performance here, 
-        // or trust the engine to inline. Since we extracted it to MathUtils, let's try to use it 
-        // but maybe modify MathUtils to be very raw. 
-        // Actually, let's keep the logic here for performance as it was in original effects.js, 
-        // but cleaner.
-
-        const centerX = width / 2;
-        const centerY = height / 2;
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                // We can reuse the MathUtils function if we import it.
-                const result = MathUtils.isInsideSuperEllipse(x, y, centerX, centerY, width, height, cornerRadius, exponent);
-
-                if (!result.inside) {
-                    const idx = (y * width + x) * 4;
-                    if (useAntialias && result.distance < 0.3) {
-                        const alpha = Math.min(1, result.distance / 0.3);
-                        data[idx] = data[idx] * (1 - alpha) + bgColor[0] * alpha;
-                        data[idx + 1] = data[idx + 1] * (1 - alpha) + bgColor[1] * alpha;
-                        data[idx + 2] = data[idx + 2] * (1 - alpha) + bgColor[2] * alpha;
-                        if (params.background === 'transparent') {
-                            data[idx + 3] = data[idx + 3] * (1 - alpha);
-                        }
-                    } else {
-                        data[idx] = bgColor[0];
-                        data[idx + 1] = bgColor[1];
-                        data[idx + 2] = bgColor[2];
-                        data[idx + 3] = bgColor[3];
-                    }
-                }
-            }
-        }
-        return imageData;
-    },
 
     // --- Canvas Drawing Effects ---
     // These operate on a Context, not ImageData, because they use fillRect/Gradients/DrawImage
@@ -404,47 +242,5 @@ export const Processor = {
     // Resize and Crop return new dimensions/canvas, usually handled by specific logic
     // But we can put the calculation logic here.
 
-    calculateResizeOutput: (originalWidth, originalHeight, params) => {
-        let outputWidth, outputHeight;
 
-        switch (params.mode) {
-            case 'percent':
-                const scale = params.scale / 100;
-                outputWidth = Math.round(originalWidth * scale);
-                outputHeight = Math.round(originalHeight * scale);
-                break;
-            case 'pixel':
-                if (params.maintainAspect === 'on') {
-                    const aspectRatio = originalWidth / originalHeight;
-                    outputWidth = params.width;
-                    outputHeight = Math.round(outputWidth / aspectRatio);
-                } else {
-                    outputWidth = params.width;
-                    outputHeight = params.height;
-                }
-                break;
-            case 'long':
-                if (originalWidth >= originalHeight) {
-                    outputWidth = params.longSide;
-                    outputHeight = Math.round(outputWidth * originalHeight / originalWidth);
-                } else {
-                    outputHeight = params.longSide;
-                    outputWidth = Math.round(outputHeight * originalWidth / originalHeight);
-                }
-                break;
-            case 'short':
-                if (originalWidth <= originalHeight) {
-                    outputWidth = params.shortSide;
-                    outputHeight = Math.round(outputWidth * originalHeight / originalWidth);
-                } else {
-                    outputHeight = params.shortSide;
-                    outputWidth = Math.round(outputHeight * originalWidth / originalHeight);
-                }
-                break;
-            default:
-                outputWidth = originalWidth;
-                outputHeight = originalHeight;
-        }
-        return { width: outputWidth, height: outputHeight };
-    }
 };

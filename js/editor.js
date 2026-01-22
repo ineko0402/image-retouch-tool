@@ -71,9 +71,7 @@ export function openEditor(effectId) {
   EditorView.renderControls(effect, defaults, (id, val) => {
     const updates = { [id]: val };
 
-    if (effect.id === 'resize') {
-      handleResizeLogic(id, val, image, updates);
-    }
+
 
     // Handle Crop Preset Change
     if (effect.id === 'crop') {
@@ -120,17 +118,7 @@ export function openEditor(effectId) {
   setStep(3);
 }
 
-function handleResizeLogic(changedId, newVal, originalImage, updates) {
-  const currentParams = { ...store.getState().effect.params, ...updates };
 
-  if (Processor.calculateResizeOutput) {
-    const size = Processor.calculateResizeOutput(originalImage.width, originalImage.height, currentParams);
-    updates.resultWidth = size.width;
-    updates.resultHeight = size.height;
-    EditorView.updateControlValue('resultWidth', size.width);
-    EditorView.updateControlValue('resultHeight', size.height);
-  }
-}
 
 export function closeEditor() {
   destroyCropMode();
@@ -194,10 +182,7 @@ function render() {
     Processor.gradient(ctx, canvas.width, canvas.height, state.effect.params);
   } else if (effect.id === 'spotlight') {
     Processor.spotlight(ctx, canvas.width, canvas.height, state.effect.params);
-  } else if (effect.id === 'resize') {
-    if (state.effect.params.interpolation === 'pixelated') ctx.imageSmoothingEnabled = false;
-    else ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
   }
 }
 
@@ -225,14 +210,7 @@ function downloadImage() {
     canvas.height = cropH;
     ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
   }
-  else if (effect.id === 'resize') {
-    const size = Processor.calculateResizeOutput(img.width, img.height, state.effect.params);
-    canvas.width = size.width;
-    canvas.height = size.height;
-    if (state.effect.params.interpolation === 'pixelated') ctx.imageSmoothingEnabled = false;
-    else ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  }
+
   else {
     ctx.drawImage(img, 0, 0);
     if (!effect.requiresInteraction && !effect.requiresSpecialHandling) {

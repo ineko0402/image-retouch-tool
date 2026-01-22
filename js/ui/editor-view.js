@@ -49,9 +49,7 @@ export const EditorView = {
                 const select = this.createSelect(control, params[control.id]);
                 select.addEventListener('change', (e) => {
                     onParamChange(control.id, e.target.value);
-                    if (effect.id === 'resize') {
-                        this.updateResizeVisibility(e.target.value);
-                    }
+
                 });
                 group.appendChild(this.createLabel(control.label));
                 group.appendChild(select);
@@ -98,9 +96,7 @@ export const EditorView = {
             panel.appendChild(group);
         });
 
-        if (effect.id === 'resize') {
-            this.updateResizeVisibility(params.mode);
-        }
+
     },
 
     createLabel(text) {
@@ -123,22 +119,7 @@ export const EditorView = {
         return select;
     },
 
-    updateResizeVisibility(mode) {
-        const groups = ['scale', 'width', 'height', 'maintainAspect', 'longSide', 'shortSide'];
-        groups.forEach(id => {
-            const el = document.getElementById(`group-${id}`);
-            if (el) el.style.display = 'none';
-        });
 
-        if (mode === 'percent') document.getElementById('group-scale').style.display = 'block';
-        else if (mode === 'pixel') {
-            document.getElementById('group-width').style.display = 'block';
-            document.getElementById('group-height').style.display = 'block';
-            document.getElementById('group-maintainAspect').style.display = 'block';
-        }
-        else if (mode === 'long') document.getElementById('group-longSide').style.display = 'block';
-        else if (mode === 'short') document.getElementById('group-shortSide').style.display = 'block';
-    },
 
     updateControlValue(id, value, unit = '') {
         const input = document.getElementById(`control-${id}`);
